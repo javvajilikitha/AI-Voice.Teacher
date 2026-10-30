@@ -1,0 +1,33 @@
+/* ========================================================
+   ANIMATED PARTICLE BACKGROUND STYLING
+   Dark Navy-Blue Theme with glowing cyan & blue particles
+   ======================================================== */
+
+#bg-particles-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    pointer-events: none !important;
+    display: block;
+}
+
+/* Ensure the body is transparent so the particle canvas behind it is fully visible */
+body {
+    background: transparent !important;
+}
+
+html {
+    background: #07152f;
+}
+
+/* If light mode is toggled, preserve readability while keeping background smooth */
+body.light-mode {
+    background: var(--bg) !important;
+}
+
+body.light-mode #bg-particles-canvas {
+    opacity: 0.25;
+}

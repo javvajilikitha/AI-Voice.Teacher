@@ -1,0 +1,1739 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Voice Teacher</title>
+<link rel="stylesheet" href="/static/background.css">
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    color-scheme: dark;
+    --bg: linear-gradient(135deg, #07152f, #102c58, #111827);
+    --text: #ffffff;
+    --muted: #cbd5e1;
+    --heading: #7dd3fc;
+    --card: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.14);
+    --field: #0f203e;
+    --field-border: #475569;
+    --result: rgba(2,132,199,0.12);
+    --flashcard: rgba(15,32,62,0.8);
+    --stat: rgba(2,132,199,0.18);
+    --footer: #94a3b8;
+    --button: #0284c7;
+    --button-hover: #0369a1;
+    --secondary: #334155;
+}
+
+body.light-mode {
+    color-scheme: light;
+    --bg: linear-gradient(135deg, #eff6ff, #dbeafe, #f8fafc);
+    --text: #172554;
+    --muted: #475569;
+    --heading: #075985;
+    --card: rgba(255,255,255,0.88);
+    --border: #cbd5e1;
+    --field: #ffffff;
+    --field-border: #94a3b8;
+    --result: #e0f2fe;
+    --flashcard: #f0f9ff;
+    --stat: #dbeafe;
+    --footer: #475569;
+    --button: #0369a1;
+    --button-hover: #075985;
+    --secondary: #dbeafe;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height: 100vh;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+header {
+    text-align: center;
+    padding: 24px 15px;
+}
+
+header h1 {
+    color: var(--heading);
+    margin-bottom: 8px;
+}
+
+header p {
+    color: var(--muted);
+}
+
+.theme-container {
+    width: 92%;
+    max-width: 850px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 15px;
+}
+
+#themeToggle {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 25px;
+    padding: 10px 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.container {
+    width: 92%;
+    max-width: 850px;
+    margin: auto;
+    padding-bottom: 40px;
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 22px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    transition: background 0.3s, border-color 0.3s;
+}
+
+h2 {
+    color: var(--heading);
+    margin-top: 0;
+}
+
+h3 {
+    color: var(--heading);
+}
+
+label {
+    display: block;
+    margin: 14px 0 7px;
+    color: var(--muted);
+}
+
+textarea, input, select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 9px;
+    border: 1px solid var(--field-border);
+    background: var(--field);
+    color: var(--text);
+    font-size: 15px;
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+button {
+    background: var(--button);
+    color: #ffffff;
+    border: none;
+    border-radius: 9px;
+    padding: 12px 17px;
+    margin: 12px 7px 0 0;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+button:hover {
+    background: var(--button-hover);
+}
+
+button:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
+.secondary {
+    background: var(--secondary);
+    color: var(--text);
+}
+
+.pause {
+    background: #b7791f;
+    color: #ffffff;
+}
+
+.stop {
+    background: #c0392b;
+    color: #ffffff;
+}
+
+.result {
+    margin-top: 18px;
+    padding: 16px;
+    background: var(--result);
+    border-radius: 10px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: var(--text);
+}
+
+.status {
+    color: #fbbf24;
+    margin-top: 12px;
+    white-space: pre-wrap;
+}
+
+body.light-mode .status {
+    color: #92400e;
+}
+
+.option {
+    display: block;
+    padding: 8px 0;
+}
+
+.option input {
+    width: auto;
+    margin-right: 8px;
+}
+
+.stat {
+    display: inline-block;
+    background: var(--stat);
+    color: var(--text);
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin: 5px;
+}
+
+.flashcard {
+    border: 1px solid var(--heading);
+    border-radius: 12px;
+    padding: 18px;
+    margin-top: 12px;
+    background: var(--flashcard);
+    color: var(--text);
+}
+
+footer {
+    text-align: center;
+    color: var(--footer);
+    padding: 20px;
+    font-size: 13px;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+/* Navigation and Profile bar */
+.top-nav-container {
+    width: 92%;
+    max-width: 850px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    padding-top: 15px;
+}
+
+.user-profile-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 25px;
+    font-size: 14px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.user-greeting {
+    color: var(--heading);
+    font-weight: bold;
+}
+
+.logout-btn {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+    padding: 6px 13px;
+    margin: 0;
+    border-radius: 18px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.logout-btn:hover {
+    background: rgba(239, 68, 68, 0.35);
+}
+
+/* Welcome & Login section */
+.welcome-section {
+    width: 92%;
+    max-width: 540px;
+    margin: 30px auto;
+    padding: 28px 24px;
+    text-align: center;
+    border-radius: 22px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 35px rgba(0,0,0,0.25);
+    transition: background 0.3s, border-color 0.3s;
+}
+
+/* Reduced image size - clean, compact and balanced */
+.welcome-image {
+    display: block;
+    width: 125px;
+    height: 125px;
+    max-width: 100%;
+    object-fit: contain;
+    border-radius: 18px;
+    margin: 0 auto 16px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    transition: transform 0.25s ease;
+}
+
+.welcome-image:hover {
+    transform: scale(1.04);
+}
+
+.welcome-section h1 {
+    font-size: clamp(22px, 3.2vw, 30px);
+    color: var(--heading);
+    margin: 0 0 10px;
+}
+
+.welcome-section p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--muted);
+    margin: 0 0 20px;
+}
+
+/* Login card and forms */
+.login-box {
+    margin-top: 10px;
+    padding: 20px;
+    background: var(--field);
+    border: 1px solid var(--field-border);
+    border-radius: 16px;
+    text-align: left;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.login-box h2 {
+    font-size: 19px;
+    margin-bottom: 6px;
+    text-align: center;
+}
+
+.login-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.login-actions button {
+    margin: 0;
+    flex: 1;
+    min-width: 130px;
+    padding: 12px;
+}
+
+.auth-error {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid #ef4444;
+    color: #fca5a5;
+    padding: 10px 14px;
+    border-radius: 9px;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.auth-success {
+    background: rgba(34, 197, 94, 0.15);
+    border: 1px solid #22c55e;
+    color: #86efac;
+    padding: 10px 14px;
+    border-radius: 9px;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.auth-switch {
+    margin-top: 14px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.link-btn {
+    background: none;
+    border: none;
+    color: var(--heading);
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+    margin: 0 0 0 5px;
+    font-size: 14px;
+}
+
+.link-btn:hover {
+    color: #38bdf8;
+}
+
+.next-button {
+    margin-top: 20px;
+    padding: 13px 38px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: bold;
+    background: var(--button);
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4);
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+
+.next-button:hover {
+    background: var(--button-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5);
+}
+
+/* Full page Welcome Hero section */
+.welcome-hero-section {
+    width: 95%;
+    max-width: 1100px;
+    margin: 10px auto 35px;
+    text-align: center;
+}
+
+.welcome-hero-banner {
+    width: 100%;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.45);
+    border: 1px solid var(--border);
+    background: #07152f;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.welcome-hero-banner:hover {
+    box-shadow: 0 20px 60px rgba(2, 132, 199, 0.3);
+}
+
+.welcome-full-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 80vh;
+    object-fit: contain;
+    margin: 0 auto;
+}
+
+.welcome-action-bar {
+    margin-top: 24px;
+    text-align: center;
+}
+
+.hero-next-button {
+    padding: 16px 56px;
+    font-size: 19px;
+    border-radius: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    box-shadow: 0 8px 26px rgba(2, 132, 199, 0.5);
+    letter-spacing: 0.5px;
+    transition: all 0.25s ease;
+}
+
+.hero-next-button:hover {
+    background: linear-gradient(135deg, #0369a1, #075985);
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 12px 32px rgba(2, 132, 199, 0.65);
+}
+
+.welcome-image-small {
+    width: 85px;
+    height: 85px;
+    margin: 0 auto 10px;
+}
+
+.back-link-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.back-link-btn:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.back-button-prominent {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 0;
+    transition: all 0.2s ease;
+}
+
+.back-button-prominent:hover {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: var(--heading);
+    color: var(--heading);
+    transform: translateX(-3px);
+}
+
+.dashboard-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 4px 2px;
+}
+
+.dashboard-badge {
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 500;
+}
+
+@media (max-width: 600px) {
+    .card {
+        padding: 16px;
+    }
+
+    button {
+        margin-right: 4px;
+    }
+
+    .stat {
+        display: block;
+    }
+
+    header h1 {
+        font-size: 25px;
+    }
+
+    .welcome-hero-section {
+        width: 96%;
+        margin: 10px auto 20px;
+    }
+
+    .welcome-hero-banner {
+        border-radius: 16px;
+    }
+
+    .welcome-full-image {
+        max-height: 55vh;
+    }
+
+    .hero-next-button {
+        padding: 14px 40px;
+        font-size: 17px;
+        width: 80%;
+    }
+
+    .welcome-section {
+        padding: 20px 15px;
+    }
+
+    .welcome-image {
+        width: 105px;
+        height: 105px;
+    }
+
+    .login-actions {
+        flex-direction: column;
+    }
+
+    .top-nav-container {
+        flex-direction: column-reverse;
+        align-items: flex-end;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="top-nav-container">
+    <div id="userProfileBar" class="user-profile-bar" hidden>
+        <button type="button" class="back-link-btn" onclick="goToWelcomePage()" title="Back to welcome page">⬅ Welcome</button>
+        <span class="user-greeting">👤 <span id="userDisplayName">Student</span></span>
+        <button id="logoutBtn" type="button" class="logout-btn" onclick="handleLogout()">🚪 Logout</button>
+    </div>
+    <button id="themeToggle" type="button"
+        aria-label="Switch colour theme">
+        ☀️ Light Mode
+    </button>
+</div>
+
+<!-- 1. STARTING PAGE: FULL-PAGE WELCOME HERO (IMAGE COVERS THE WHOLE PAGE) -->
+<header id="welcomeSection" class="welcome-hero-section">
+    <div class="welcome-hero-banner">
+        <img
+            src="/static/welcome-ai.png"
+            alt="Welcome to AI Voice Teacher - Learn smarter with AI-powered explanations, interactive quizzes, and voice-based learning"
+            class="welcome-full-image"
+        >
+    </div>
+
+    <div class="welcome-action-bar">
+        <button
+            type="button"
+            class="hero-next-button"
+            onclick="goToLoginPage()"
+        >
+            Next ➜
+        </button>
+    </div>
+</header>
+
+<!-- 2. LOGIN PAGE: SHOWN ONLY AFTER CLICKING NEXT -->
+<section id="loginSection" class="welcome-section" hidden>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+        <button type="button" class="back-button-prominent" onclick="goToWelcomePage()">⬅ Back</button>
+        <span style="font-size: 13px; color: var(--muted);">Step 2: Sign In</span>
+    </div>
+
+    <img
+        src="/static/welcome-ai.png"
+        alt="AI Voice Teacher"
+        class="welcome-image welcome-image-small"
+    >
+
+    <h2 id="authTitle" style="margin-top: 0;">🔑 Student Login</h2>
+    <p style="margin-bottom: 14px; font-size: 14px;">Sign in to continue to your AI learning dashboard</p>
+
+    <div class="login-box">
+        <div id="authError" class="auth-error" hidden></div>
+        <div id="authSuccess" class="auth-success" hidden></div>
+
+        <form id="loginForm" onsubmit="handleAuthSubmit(event)">
+            <label for="loginUsername">Username or Email</label>
+            <input type="text" id="loginUsername" placeholder="e.g. student or student@gmail.com" autocomplete="username" required>
+
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" placeholder="Enter password (min 4 chars)" autocomplete="current-password" required>
+
+            <div class="login-actions">
+                <button type="submit" id="loginSubmitBtn">
+                    Sign In ➜
+                </button>
+                <button type="button" class="secondary" onclick="demoLogin()">
+                    ⚡ Quick Demo Login
+                </button>
+            </div>
+        </form>
+
+        <div class="auth-switch">
+            <span id="authSwitchPrompt">Don't have an account?</span>
+            <button type="button" class="link-btn" onclick="toggleAuthMode()" id="authSwitchBtn">Create one here</button>
+        </div>
+    </div>
+</section>
+
+<main class="container" id="mainApp" hidden>
+    <div class="dashboard-top-bar">
+        <button type="button" class="back-button-prominent" onclick="goToWelcomePage()">
+            ⬅ Back to Welcome
+        </button>
+        <span class="dashboard-badge">🎓 AI Voice Teacher</span>
+    </div>
+
+    <section class="card">
+        <h2>📘 Explain a Concept</h2>
+
+        <label for="question">Enter your question or topic</label>
+        <textarea id="question"
+            placeholder="Example: Explain Artificial Intelligence"></textarea>
+
+        <button type="button" class="secondary"
+            id="questionMicBtn"
+            onclick="startVoiceQuestion('question')">
+            🎤 Ask by Voice
+        </button>
+
+        <p id="questionVoiceStatus" class="status"
+            role="status" aria-live="polite"></p>
+
+        <label for="language">Choose language</label>
+        <select id="language">
+            <option value="English">English</option>
+            <option value="Telugu">Telugu</option>
+            <option value="Telugu + English">Telugu + English (Mixed)</option>
+        </select>
+
+        <label for="level">Choose your learning level</label>
+        <select id="level">
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+        </select>
+
+        <button id="explainBtn" onclick="getExplanation()">✨ Explain</button>
+        <div id="explanation" class="result" hidden></div>
+
+        <button id="saveExplanationPdfBtn" class="secondary"
+            onclick="saveExplanationPDF()" hidden>
+            📄 Save Explanation as PDF
+        </button>
+
+        <div id="lessonVoiceControls" hidden>
+            <button onclick="speakText()">🔊 Listen</button>
+            <button class="pause" onclick="pauseVoice()">⏸ Pause</button>
+            <button onclick="resumeVoice()">▶ Resume</button>
+            <button class="stop" onclick="stopVoice()">⏹ Stop</button>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>💬 Ask a Follow-up Question</h2>
+
+        <label for="followupQuestion">What would you like to understand better?</label>
+        <textarea id="followupQuestion"
+            placeholder="Ask another question about the lesson"></textarea>
+
+        <button type="button" class="secondary" id="followupMicBtn"
+            onclick="startVoiceQuestion('followupQuestion')">
+            🎤 Ask follow-up by Voice
+        </button>
+
+        <p id="followupVoiceStatus" class="status"
+            role="status" aria-live="polite"></p>
+
+        <button id="followupBtn" onclick="askFollowup()">Ask Teacher</button>
+        <div id="followupResult" class="result" hidden></div>
+
+        <button id="followupListen" onclick="speakFollowup()" hidden>
+            🔊 Listen to follow-up
+        </button>
+    </section>
+
+    <section class="card">
+        <h2>📝 Test Your Knowledge</h2>
+        <p>Generate five multiple-choice questions based on your lesson.</p>
+
+        <button id="quizBtn" onclick="generateQuiz()">Generate Quiz</button>
+        <div id="quizResult" class="result" hidden></div>
+
+        <button id="submitQuizBtn" onclick="submitQuiz()" hidden>
+            Check Answers
+        </button>
+    </section>
+
+    <section class="card">
+        <h2>🗂️ AI Flashcards</h2>
+        <p>Generate study cards from your lesson. Reveal answers to practise.</p>
+
+        <button id="flashcardsBtn" onclick="generateFlashcards()">
+            ✨ Generate Flashcards
+        </button>
+        <div id="flashcardsResult" class="result" hidden></div>
+    </section>
+
+    <section class="card">
+        <h2>📊 Learning Dashboard</h2>
+
+        <div class="stat">Completed lessons: <strong id="completedLessons">0</strong></div>
+        <div class="stat">Quizzes completed: <strong id="completedQuizzes">0</strong></div>
+        <div class="stat">Average quiz score: <strong id="averageScore">0%</strong></div>
+
+        <p><small>Progress is saved in this browser on this device.</small></p>
+
+        <button class="secondary" onclick="resetDashboard()">Reset Progress</button>
+    </section>
+
+    <section class="card">
+        <h2>📄 Learn from a PDF</h2>
+
+        <label for="pdfFile">Choose a PDF file (up to 5 MB)</label>
+        <input type="file" id="pdfFile" accept=".pdf,application/pdf">
+
+        <p>Uses your selected language and learning level above.</p>
+
+        <button id="pdfBtn" onclick="explainPDF()">Explain PDF</button>
+        <div id="pdfResult" class="result" hidden></div>
+
+        <div id="pdfVoiceControls" hidden>
+            <h3>🔊 PDF Voice Controls</h3>
+            <button onclick="speakPDF()">🔊 Listen</button>
+            <button class="pause" onclick="pauseVoice()">⏸ Pause</button>
+            <button onclick="resumeVoice()">▶ Resume</button>
+            <button class="stop" onclick="stopVoice()">⏹ Stop</button>
+        </div>
+    </section>
+
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+</main>
+
+<footer>AI Voice Teacher • Learn at your own pace</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+"use strict";
+// Configurable API base URL: defaults to same-origin when served via HTTP/S, or localhost:8000 when opened via file://
+const API_BASE_URL = (typeof window !== "undefined" && window.API_BASE_URL !== undefined)
+    ? window.API_BASE_URL
+    : (window.location.protocol.startsWith("http") ? "" : "http://127.0.0.1:8000");
+let lastExplanation = "";
+let lastTopic = "";
+let currentQuiz = [];
+let followupText = "";
+let pdfText = "";
+let flashcards = [];
+let currentFlashcard = 0;
+let activeRecognition = null;
+
+const $ = id => document.getElementById(id);
+
+
+// ---------------- DARK / LIGHT MODE ----------------
+
+const themeToggle = $("themeToggle");
+
+function applyTheme(theme) {
+    document.body.classList.toggle("light-mode", theme === "light");
+    themeToggle.textContent =
+        theme === "light" ? "🌙 Dark Mode" : "☀️ Light Mode";
+
+    themeToggle.setAttribute(
+        "aria-label",
+        theme === "light" ? "Switch to dark mode" : "Switch to light mode"
+    );
+}
+
+let savedTheme = "dark";
+
+try {
+    savedTheme = localStorage.getItem("aiTeacherTheme") || "dark";
+} catch (error) {}
+
+applyTheme(savedTheme === "light" ? "light" : "dark");
+
+themeToggle.addEventListener("click", function() {
+    const newTheme = document.body.classList.contains("light-mode")
+        ? "dark"
+        : "light";
+
+    applyTheme(newTheme);
+
+    try {
+        localStorage.setItem("aiTeacherTheme", newTheme);
+    } catch (error) {
+        setStatus("Theme changed, but could not save the preference.");
+    }
+});
+
+
+// ---------------- VOICE INPUT ----------------
+
+function startVoiceQuestion(targetId) {
+    const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const statusId = targetId === "question"
+        ? "questionVoiceStatus" : "followupVoiceStatus";
+
+    const buttonId = targetId === "question"
+        ? "questionMicBtn" : "followupMicBtn";
+
+    const status = $(statusId);
+
+    if (!SpeechRecognition) {
+        status.textContent = "Voice input is not supported. Use Chrome or type your question.";
+        return;
+    }
+
+    if (activeRecognition) {
+        try { activeRecognition.abort(); } catch (error) {}
+    }
+
+    const recognition = new SpeechRecognition();
+    activeRecognition = recognition;
+    recognition.lang = selectedLanguage() === "English" ? "en-IN" : "te-IN";
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    $(buttonId).disabled = true;
+    status.textContent = "🎤 Listening... Please speak.";
+
+    recognition.onresult = function(event) {
+        let transcript = "";
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+        }
+
+        $(targetId).value = transcript.trim();
+
+        const lastResult = event.results[event.results.length - 1];
+        status.textContent = lastResult.isFinal
+            ? "Question captured. You can edit it or submit."
+            : "Hearing: " + transcript;
+    };
+
+    recognition.onerror = function(event) {
+        const messages = {
+            "not-allowed": "Microphone permission blocked. Allow microphone access.",
+            "no-speech": "No speech detected. Please try again.",
+            "network": "Voice recognition needs a network connection."
+        };
+
+        status.textContent = messages[event.error] || ("Voice input error: " + event.error);
+    };
+
+    recognition.onend = function() {
+        $(buttonId).disabled = false;
+
+        if (activeRecognition === recognition) activeRecognition = null;
+
+        if (status.textContent.includes("Listening")) {
+            status.textContent = "Voice input ended. Try again or type your question.";
+        }
+    };
+
+    try {
+        recognition.start();
+    } catch (error) {
+        $(buttonId).disabled = false;
+        activeRecognition = null;
+        status.textContent = "Could not start microphone. Try again.";
+    }
+}
+
+
+// ---------------- COMMON FUNCTIONS ----------------
+
+function showResult(id, text) {
+    $(id).textContent = text;
+    $(id).hidden = false;
+}
+
+function setStatus(message) {
+    $("status").textContent = message;
+}
+
+function selectedLanguage() {
+    return $("language").value;
+}
+
+function selectedLevel() {
+    return $("level").value;
+}
+
+async function requestJSON(url, options = {}) {
+    let response;
+
+    try {
+        const fullUrl = url.startsWith("http") ? url : `${API_BASE_URL}${url}`;
+        response = await fetch(fullUrl, {
+            ...options,
+            headers: {
+                ...(options.headers || {}),
+                "bypass-tunnel-reminder": "true"
+            }
+        });
+    } catch (error) {
+        throw new Error(
+            "Could not connect to backend server. Make sure your FastAPI server is running."
+        );
+    }
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+        throw new Error(
+            data.detail || `Request failed with status ${response.status}`
+        );
+    }
+
+    return data;
+
+}
+
+
+// ---------------- LEARNING DASHBOARD ----------------
+
+function loadStats() {
+    try {
+        const saved = JSON.parse(localStorage.getItem("aiTeacherStats") ||
+            '{"lessons":[],"scores":[]}');
+
+        return {
+            lessons: Array.isArray(saved.lessons) ? saved.lessons : [],
+            scores: Array.isArray(saved.scores) ? saved.scores : []
+        };
+    } catch (error) {
+        return { lessons: [], scores: [] };
+    }
+}
+
+let learningStats = loadStats();
+
+function saveLearningStats() {
+    try {
+        localStorage.setItem("aiTeacherStats", JSON.stringify(learningStats));
+    } catch (error) {
+        setStatus("Could not save progress in this browser.");
+    }
+    updateDashboard();
+}
+
+function updateDashboard() {
+    $("completedLessons").textContent = learningStats.lessons.length;
+    $("completedQuizzes").textContent = learningStats.scores.length;
+
+    const average = learningStats.scores.length
+        ? learningStats.scores.reduce((sum, score) => sum + score, 0) /
+          learningStats.scores.length
+        : 0;
+
+    $("averageScore").textContent = Math.round(average) + "%";
+}
+
+function resetDashboard() {
+    if (!confirm("Reset all saved learning progress?")) return;
+
+    learningStats = { lessons: [], scores: [] };
+    saveLearningStats();
+    setStatus("Learning progress reset.");
+}
+
+
+// ---------------- EXPLAIN A CONCEPT ----------------
+
+async function getExplanation() {
+    const question = $("question").value.trim();
+
+    if (!question) {
+        setStatus("Please enter a question first.");
+        return;
+    }
+
+    $("explainBtn").disabled = true;
+    setStatus("AI teacher is preparing your explanation...");
+
+    try {
+        const data = await requestJSON("/explain", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                question,
+                language: selectedLanguage(),
+                level: selectedLevel()
+            })
+        });
+
+        lastExplanation = data.explanation;
+        lastTopic = question;
+
+        if (!learningStats.lessons.includes(lastTopic)) {
+            learningStats.lessons.push(lastTopic);
+            saveLearningStats();
+        }
+
+        showResult("explanation", lastExplanation);
+        $("lessonVoiceControls").hidden = false;
+        $("saveExplanationPdfBtn").hidden = false;
+        setStatus("Explanation ready! You can listen, save as PDF, or generate flashcards.");
+    } catch (error) {
+        setStatus(error.message);
+    } finally {
+        $("explainBtn").disabled = false;
+    }
+}
+
+
+// ---------------- FOLLOW-UP QUESTION ----------------
+
+async function askFollowup() {
+    const question = $("followupQuestion").value.trim();
+
+    if (!lastExplanation) {
+        setStatus("Generate a lesson explanation first.");
+        return;
+    }
+    if (!question) {
+        setStatus("Enter your follow-up question.");
+        return;
+    }
+
+    $("followupBtn").disabled = true;
+    setStatus("Teacher is answering your question...");
+
+    try {
+        const data = await requestJSON("/followup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                question,
+                previous_explanation: lastExplanation,
+                language: selectedLanguage(),
+                level: selectedLevel()
+            })
+        });
+
+        followupText = data.explanation;
+        showResult("followupResult", followupText);
+        $("followupListen").hidden = false;
+        setStatus("Follow-up answer ready!");
+    } catch (error) {
+        setStatus(error.message);
+    } finally {
+        $("followupBtn").disabled = false;
+    }
+}
+
+
+// ---------------- QUIZ ----------------
+
+async function generateQuiz() {
+    if (!lastExplanation) {
+        setStatus("Generate a lesson explanation before creating a quiz.");
+        return;
+    }
+
+    $("quizBtn").disabled = true;
+    setStatus("Creating your quiz...");
+
+    try {
+        const data = await requestJSON("/quiz", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                topic: lastTopic,
+                explanation: lastExplanation,
+                language: selectedLanguage()
+            })
+        });
+
+        currentQuiz = data.questions;
+        renderQuiz();
+        setStatus("Quiz ready! Choose one answer for each question.");
+    } catch (error) {
+        setStatus(error.message);
+    } finally {
+        $("quizBtn").disabled = false;
+    }
+}
+
+function renderQuiz() {
+    const container = $("quizResult");
+    container.replaceChildren();
+
+    currentQuiz.forEach((item, index) => {
+        const block = document.createElement("div");
+        block.style.marginBottom = "20px";
+
+        const title = document.createElement("p");
+        title.textContent = `${index + 1}. ${item.question}`;
+        block.appendChild(title);
+
+        item.options.forEach((option, optionIndex) => {
+            const label = document.createElement("label");
+            label.className = "option";
+
+            const radio = document.createElement("input");
+            radio.type = "radio";
+            radio.name = `question-${index}`;
+            radio.value = optionIndex;
+
+            label.appendChild(radio);
+            label.appendChild(document.createTextNode(option));
+            block.appendChild(label);
+        });
+
+        container.appendChild(block);
+    });
+
+    container.hidden = false;
+    $("submitQuizBtn").hidden = false;
+}
+
+function submitQuiz() {
+    if (!currentQuiz.length) return;
+
+    const unansweredIndices = [];
+    currentQuiz.forEach((_, index) => {
+        const selected = document.querySelector(`input[name="question-${index}"]:checked`);
+        if (!selected) {
+            unansweredIndices.push(index + 1);
+        }
+    });
+
+    if (unansweredIndices.length > 0) {
+        setStatus(`Please answer all questions before submitting. Unanswered: Question(s) ${unansweredIndices.join(", ")}`);
+        return;
+    }
+
+    let score = 0;
+    const feedback = [];
+
+    currentQuiz.forEach((item, index) => {
+        const selected = document.querySelector(`input[name="question-${index}"]:checked`);
+        const chosen = Number(selected.value);
+        const correct = chosen === item.answer;
+        if (correct) score++;
+
+        feedback.push(
+            `Q${index + 1}: ${correct ? "✅ Correct" : "❌ Incorrect"}.\n` +
+            `Your answer: ${item.options[chosen]}\n` +
+            `Correct answer: ${item.options[item.answer]}\n` +
+            `Explanation: ${item.reason || ""}`
+        );
+    });
+
+    const percentage = Math.round((score / currentQuiz.length) * 100);
+    learningStats.scores.push(percentage);
+    saveLearningStats();
+
+    const scoreText = `🎯 Final Score: ${score}/${currentQuiz.length} (${percentage}%)`;
+    showResult("quizResult", scoreText + "\n\n" + feedback.join("\n\n"));
+    setStatus("Quiz checked! Your score was added to the learning dashboard.");
+}
+
+
+// ---------------- AI FLASHCARDS ----------------
+
+async function generateFlashcards() {
+    if (!lastExplanation) {
+        setStatus("Generate a lesson explanation first.");
+        return;
+    }
+
+    $("flashcardsBtn").disabled = true;
+    setStatus("Creating your flashcards...");
+
+    try {
+        const data = await requestJSON("/flashcards", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                topic: lastTopic,
+                explanation: lastExplanation,
+                language: selectedLanguage()
+            })
+        });
+
+        flashcards = data.flashcards;
+        currentFlashcard = 0;
+        renderFlashcard();
+        setStatus("Flashcards ready! Start practising.");
+    } catch (error) {
+        setStatus(error.message);
+    } finally {
+        $("flashcardsBtn").disabled = false;
+    }
+}
+
+function renderFlashcard() {
+    const container = $("flashcardsResult");
+    container.replaceChildren();
+
+    if (!flashcards.length) {
+        container.hidden = true;
+        return;
+    }
+
+    const card = flashcards[currentFlashcard];
+    const wrapper = document.createElement("div");
+    wrapper.className = "flashcard";
+
+    const counter = document.createElement("p");
+    counter.textContent = `Card ${currentFlashcard + 1} of ${flashcards.length}`;
+
+    const question = document.createElement("h3");
+    question.textContent = card.question;
+
+    const answer = document.createElement("p");
+    answer.hidden = true;
+    answer.textContent = "Answer: " + card.answer;
+
+    const reveal = document.createElement("button");
+    reveal.textContent = "👀 Reveal Answer";
+    reveal.onclick = () => { answer.hidden = false; };
+
+    const next = document.createElement("button");
+    next.className = "secondary";
+    next.textContent = currentFlashcard === flashcards.length - 1
+        ? "Start Again" : "Next Card";
+
+    next.onclick = () => {
+        currentFlashcard = (currentFlashcard + 1) % flashcards.length;
+        renderFlashcard();
+    };
+
+    wrapper.append(counter, question, answer, reveal, next);
+    container.appendChild(wrapper);
+    container.hidden = false;
+}
+
+
+// ---------------- PDF EXPLANATION ----------------
+
+async function explainPDF() {
+    const file = $("pdfFile").files[0];
+
+    if (!file) {
+        setStatus("Please choose a PDF file.");
+        return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        setStatus("PDF must be 5 MB or smaller.");
+        return;
+    }
+    if (!file.name.toLowerCase().endsWith(".pdf")) {
+        setStatus("Please select a PDF file.");
+        return;
+    }
+
+    $("pdfBtn").disabled = true;
+    setStatus("Reading PDF and preparing your explanation...");
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("language", selectedLanguage());
+    formData.append("level", selectedLevel());
+
+    try {
+        const data = await requestJSON("/pdf-explain", {
+            method: "POST",
+            body: formData
+        });
+
+        pdfText = data.explanation;
+        showResult("pdfResult", pdfText);
+        $("pdfVoiceControls").hidden = false;
+        setStatus("PDF explanation ready! You can control voice playback.");
+    } catch (error) {
+        setStatus(error.message);
+    } finally {
+        $("pdfBtn").disabled = false;
+    }
+}
+
+
+// ---------------- SAVE EXPLANATION AS PDF ----------------
+
+async function saveExplanationPDF() {
+    if (!lastExplanation || !lastTopic) {
+        setStatus("Please generate a topic explanation first.");
+        return;
+    }
+
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+        setStatus("PDF library did not load. Check your internet connection.");
+        return;
+    }
+
+    const safeName = (lastTopic || "AI-Voice-Teacher")
+        .replace(/[\\/:*?"<>|]/g, "-")
+        .trim().slice(0, 90) || "AI-Voice-Teacher";
+
+    try {
+        setStatus("Preparing your PDF...");
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ unit: "mm", format: "a4" });
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const margin = 18;
+        const usableWidth = pageWidth - margin * 2;
+        let y = 20;
+
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(20);
+        pdf.setTextColor(7, 89, 133);
+        pdf.text("AI Voice Teacher", margin, y);
+        y += 12;
+
+        pdf.setFontSize(15);
+        pdf.setTextColor(15, 23, 42);
+        const topicLines = pdf.splitTextToSize(lastTopic, usableWidth);
+        pdf.text(topicLines, margin, y);
+        y += topicLines.length * 7 + 3;
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(10);
+        pdf.setTextColor(71, 85, 105);
+        pdf.text(`Language: ${selectedLanguage()} | Level: ${selectedLevel()}`, margin, y);
+        y += 10;
+
+        pdf.setFontSize(11);
+        pdf.setTextColor(30, 41, 59);
+
+        const paragraphs = String(lastExplanation).replace(/\r/g, "").split("\n");
+
+        for (const paragraph of paragraphs) {
+            const lines = pdf.splitTextToSize(paragraph || " ", usableWidth);
+            const lineHeight = 5.5;
+
+            if (y + lines.length * lineHeight > pageHeight - margin) {
+                pdf.addPage();
+                y = margin;
+            }
+
+            pdf.text(lines, margin, y);
+            y += lines.length * lineHeight + 2;
+        }
+
+        const blob = pdf.output("blob");
+
+        if ("showSaveFilePicker" in window) {
+            const handle = await window.showSaveFilePicker({
+                suggestedName: `${safeName}.pdf`,
+                types: [{
+                    description: "PDF document",
+                    accept: { "application/pdf": [".pdf"] }
+                }]
+            });
+
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            setStatus("PDF saved successfully to your selected folder.");
+        } else {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `${safeName}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1500);
+            setStatus("PDF download started. Check your browser downloads.");
+        }
+    } catch (error) {
+        if (error.name === "AbortError") {
+            setStatus("PDF save cancelled.");
+        } else {
+            console.error(error);
+            setStatus("Could not save the PDF. Please try again.");
+        }
+    }
+}
+
+
+// ---------------- VOICE PLAYBACK ----------------
+
+function speakText() {
+    speak(lastExplanation);
+}
+
+function speakFollowup() {
+    speak(followupText);
+}
+
+function speakPDF() {
+    speak(pdfText);
+}
+
+function speak(text) {
+    if (!text || !text.trim()) {
+        setStatus("Generate an explanation first.");
+        return;
+    }
+
+    if (!("speechSynthesis" in window)) {
+        setStatus("Voice playback is not supported in this browser.");
+        return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = selectedLanguage() === "English" ? "en-US" : "te-IN";
+    utterance.rate = 0.9;
+
+    utterance.onstart = () => setStatus("Voice is playing...");
+    utterance.onend = () => setStatus("Voice playback finished.");
+    utterance.onerror = () => setStatus("Voice playback failed. Check available browser voices.");
+
+    window.speechSynthesis.speak(utterance);
+}
+
+function pauseVoice() {
+    if ("speechSynthesis" in window) {
+        window.speechSynthesis.pause();
+        setStatus("Voice paused.");
+    }
+}
+
+function resumeVoice() {
+    if ("speechSynthesis" in window) {
+        window.speechSynthesis.resume();
+        setStatus("Resuming voice...");
+    }
+}
+
+function stopVoice() {
+    if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        setStatus("Voice stopped.");
+    }
+}
+
+
+
+// ---------------- AUTHENTICATION & LOGIN ----------------
+
+let isRegisterMode = false;
+
+function getStoredUser() {
+    try {
+        const u = localStorage.getItem("aiTeacherUser");
+        return u ? JSON.parse(u) : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function updateAuthUI() {
+    const user = getStoredUser();
+    const welcomeSection = $("welcomeSection");
+    const loginSection = $("loginSection");
+    const mainApp = $("mainApp");
+    const userProfileBar = $("userProfileBar");
+    const userDisplayName = $("userDisplayName");
+
+    if (user && user.loggedIn) {
+        if (welcomeSection) welcomeSection.hidden = true;
+        if (loginSection) loginSection.hidden = true;
+        if (mainApp) mainApp.hidden = false;
+        if (userProfileBar) userProfileBar.hidden = false;
+        if (userDisplayName) userDisplayName.textContent = user.username || "Student";
+    } else {
+        // Starting page: ONLY Welcome page is shown!
+        if (welcomeSection) welcomeSection.hidden = false;
+        if (loginSection) loginSection.hidden = true;
+        if (mainApp) mainApp.hidden = true;
+        if (userProfileBar) userProfileBar.hidden = true;
+    }
+}
+
+function goToLoginPage() {
+    const user = getStoredUser();
+    const welcomeSection = $("welcomeSection");
+    const loginSection = $("loginSection");
+    const mainApp = $("mainApp");
+
+    if (welcomeSection) welcomeSection.hidden = true;
+
+    if (user && user.loggedIn) {
+        if (loginSection) loginSection.hidden = true;
+        if (mainApp) mainApp.hidden = false;
+        return;
+    }
+
+    if (loginSection) loginSection.hidden = false;
+    if (mainApp) mainApp.hidden = true;
+
+    setTimeout(() => {
+        const input = $("loginUsername");
+        if (input) input.focus();
+    }, 100);
+}
+
+function goToWelcomePage() {
+    const welcomeSection = $("welcomeSection");
+    const loginSection = $("loginSection");
+    const mainApp = $("mainApp");
+
+    if (welcomeSection) welcomeSection.hidden = false;
+    if (loginSection) loginSection.hidden = true;
+    if (mainApp) mainApp.hidden = true;
+}
+
+function showMainPage() {
+    goToLoginPage();
+}
+
+function toggleAuthMode() {
+    isRegisterMode = !isRegisterMode;
+    const authTitle = $("authTitle");
+    const loginSubmitBtn = $("loginSubmitBtn");
+    const authSwitchPrompt = $("authSwitchPrompt");
+    const authSwitchBtn = $("authSwitchBtn");
+    const authError = $("authError");
+    const authSuccess = $("authSuccess");
+
+    if (authError) authError.hidden = true;
+    if (authSuccess) authSuccess.hidden = true;
+
+    if (isRegisterMode) {
+        authTitle.textContent = "📝 Create Student Account";
+        loginSubmitBtn.textContent = "Register & Start ➜";
+        authSwitchPrompt.textContent = "Already have an account?";
+        authSwitchBtn.textContent = "Login here";
+    } else {
+        authTitle.textContent = "🔑 Student Login";
+        loginSubmitBtn.textContent = "Sign In ➜";
+        authSwitchPrompt.textContent = "Don't have an account?";
+        authSwitchBtn.textContent = "Create one here";
+    }
+}
+
+async function handleAuthSubmit(event) {
+    if (event) event.preventDefault();
+    const username = $("loginUsername").value.trim();
+    const password = $("loginPassword").value.trim();
+    const authError = $("authError");
+    const authSuccess = $("authSuccess");
+    const loginSubmitBtn = $("loginSubmitBtn");
+
+    if (authError) authError.hidden = true;
+    if (authSuccess) authSuccess.hidden = true;
+
+    if (!username) {
+        if (authError) {
+            authError.textContent = "Please enter your username or email.";
+            authError.hidden = false;
+        }
+        return;
+    }
+
+    if (!password) {
+        if (authError) {
+            authError.textContent = "Please enter your password.";
+            authError.hidden = false;
+        }
+        return;
+    }
+
+    if (password.length < 4) {
+        if (authError) {
+            authError.textContent = "Password must be at least 4 characters.";
+            authError.hidden = false;
+        }
+        return;
+    }
+
+    if (loginSubmitBtn) loginSubmitBtn.disabled = true;
+
+    try {
+        const endpoint = isRegisterMode
+            ? "/api/register"
+            : "/api/login";
+
+        const data = await requestJSON(endpoint, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username,
+                password
+            })
+        });
+
+        const userData = {
+            username: (data && data.username) ? data.username : username,
+            loggedIn: true,
+            loginTime: new Date().toISOString()
+        };
+
+        try {
+            localStorage.setItem("aiTeacherUser", JSON.stringify(userData));
+        } catch (e) {}
+
+        if (authSuccess) {
+            authSuccess.textContent = (data && data.message)
+                ? data.message
+                : (isRegisterMode ? "Account created successfully! Welcome." : "Login successful! Welcome back.");
+            authSuccess.hidden = false;
+        }
+
+        setTimeout(() => {
+            updateAuthUI();
+            setStatus("Logged in as " + userData.username);
+        }, 450);
+
+    } catch (err) {
+        if (authError) {
+            authError.textContent = err.message || "Authentication failed. Please try again.";
+            authError.hidden = false;
+        }
+    } finally {
+        if (loginSubmitBtn) loginSubmitBtn.disabled = false;
+    }
+}
+
+function demoLogin() {
+    const demoUser = {
+        username: "Student",
+        loggedIn: true,
+        loginTime: new Date().toISOString()
+    };
+    try {
+        localStorage.setItem("aiTeacherUser", JSON.stringify(demoUser));
+    } catch (e) {}
+    updateAuthUI();
+    setStatus("Logged in as Student.");
+}
+
+function handleLogout() {
+    try {
+        localStorage.removeItem("aiTeacherUser");
+    } catch (e) {}
+    const loginUsername = $("loginUsername");
+    const loginPassword = $("loginPassword");
+    if (loginUsername) loginUsername.value = "";
+    if (loginPassword) loginPassword.value = "";
+    const authError = $("authError");
+    const authSuccess = $("authSuccess");
+    if (authError) authError.hidden = true;
+    if (authSuccess) authSuccess.hidden = true;
+    updateAuthUI();
+    setStatus("Logged out successfully.");
+}
+
+
+// ---------------- INITIALIZE ----------------
+
+updateDashboard();
+updateAuthUI();
+
+</script>
+<script src="/static/particles.js"></script>
+</body>
+</html>
